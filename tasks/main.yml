@@ -1,0 +1,33 @@
+---
+ - name: install unzip
+   package: name=unzip state=present
+   become: true
+
+ - name: determine download url
+   set_fact:
+     terraform_download_url: "https://releases.hashicorp.com/terraform/{{ version }}/terraform_{{ version }}_linux_amd64.zip"
+     terraform_install_dir: "/usr/local/share/terraform/{{ version }}"
+
+ - name: create install directory
+   file: path="{{ terraform_install_dir }}" owner=root group=root mode=0755 state=directory
+   become: true
+
+ - name: download
+   unarchive:
+     copy: no
+     src: "{{ terraform_download_url }}"
+     dest: "{{ terraform_install_dir }}"
+     creates: "{{ terraform_install_dir }}/terraform"
+     mode: 0755
+     owner: root
+     group: root
+   become: true
+
+ - name: set symlink
+   file:
+     state: link
+     src: "/usr/local/share/terraform/{{ version }}/terraform"
+     dest: "/usr/local/bin/terraform"
+     owner: root
+     group: root
+   become: true
